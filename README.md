@@ -1,1 +1,1 @@
-application pour le cours de android
+Application pour le cours d'application mobile
