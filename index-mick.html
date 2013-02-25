@@ -1,0 +1,254 @@
+﻿<!DOCTYPE html>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+    <head>
+		<title>AppMobile</title>
+		<meta name="viewport" content="width=device-width, initial-scale=2 user-scalable=no"> 
+		<!-- phonegap setup -->
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="css/index.css" />
+		<script type="text/javascript" src="cordova-2.4.0.js"></script>
+		<!-- jQuery Mobile setup -->
+		
+		<link rel="stylesheet" href="jquery/jquery.mobile-1.2.0.min.css" />
+		
+		<script src="jquery/jquery-1.8.2.js"></script>
+		<script type="text/javascript">
+			$( document ).bind( "mobileinit", function() {
+				// Faites vos changements de configuration du framework jQuery Mobile ici !
+				$.support.cors = true;
+				$.mobile.allowCrossDomainPages = true;
+				$.mobile.defaultPageTransition = "slide";
+			});
+			
+			
+		// Wait for Cordova to load
+		//
+		document.addEventListener("deviceready", onDeviceReady, false);
+
+		// Cordova is ready
+		//
+		function onDeviceReady() {
+			// find all contacts with 'Bob' in any name field
+			var options = new ContactFindOptions();
+			
+			options.filter=""; 
+			options.multiple=true;
+			
+			var fields = ["displayName"];
+			navigator.contacts.find(fields, onSuccess, onError, options);
+		};
+		// onSuccess: Get a snapshot of the current contacts
+		//
+		function onSuccess(contacts) {
+			//var str = "";
+			//var tab = new Array();
+			for (var i=0; i<contacts.length; i++) {
+				//str+=("Name = " + contacts[i].displayName);
+				add(contacts[i].displayName);
+			}
+			//document.getElementById('Affichage').innerHTML = str;
+		}
+	
+		 function add(nom){
+			 var newOption = document.createElement("option");
+			 newOption.setAttribute("value",nom);
+			 newOption.innerHTML=nom;
+			 document.getElementById("clicContact").appendChild(newOption);
+		}
+				
+		// onError: Failed to get the contacts
+		//
+		function onError(contactError) {
+			alert('onError!');
+		}
+		</script>
+		<script src="jquery/jquery.mobile-1.2.0.min.js"></script>
+
+	
+        
+    </head>
+    <body>
+            <div data-role="page" id="Acceuil">
+				<div data-role="header" data-position="fixed">
+					<h1>Acceuil</h1>
+                </div><!-- /header -->
+                <div data-role="content">        
+					<ul data-role="listview" data-filter="true" data-inset="true" datafilter-placeholder="Rechercher...">
+						<li data-role="list-divider">DVD</li>
+								<li><a href="index.html">
+									<h3>Snatch</h3>
+									<p>Bien sûr, planifions la réunion à Cuisine Highland à 8:00 ce soir. Ne peux pas attendre ! </p>
+									</a>
+								</li>
+								<li>Expendable 2</li>
+								<li>Avatar</li>
+								<li>Ali-G</li>
+								<li>Brice de Nice</li>
+						<li data-role="list-divider">CD</li>
+							<li>NRJ Music Awards</li>
+							<li>Fun Radio Summer 2012</li>
+							<li>Martin Solveig</li>
+							<li>David Guetta</li>
+							<li>Snoop Dog</li>
+						<li data-role="list-divider">LIVRES</li>
+							<li>Harry Potter</li>
+							<li>La lettre</li>
+							<li>Amadeus</li>
+							<li>La France</li>
+							<li>Les nouvelles technologies</li>
+						<li data-role="list-divider">ARGENT</li>
+							<li>Bertrand 10€</li>
+							<li>Vincent 12€</li>
+							<li>Anthony 5€</li>
+					</ul>
+				</div><!-- /content -->
+				<div data-role="footer">		
+					<div data-role="navbar" data-id="foo1" data-position="fixed">
+						<ul>
+							<li><a href="#Acceuil" class="ui-btn-active ui-state-persist">Acceuil</a></li>
+							<li><a href="#Ajout">Ajout</a></li>
+							<li><a href="#Credits">Credits</a></li>
+						</ul>
+					</div><!-- /navbar -->
+				</div><!-- /footer -->
+			</div><!-- /page -->
+        
+		
+			<div data-role="page" id="Ajout">
+				<div data-role="header" data-position="fixed">
+					<h1>Ajout</h1>
+                </div><!-- /header -->
+                <div data-role="content">       
+					<form>
+						<ul data-role="listview" data-inset="true"> 
+							<li data-role="fieldcontain">
+								<label for="select-choice-1" class="select">Choisissez le type de prêt :</label>
+								<div class="ui-grid-a">
+									<div class="ui-block-a">
+										<select name="select-choice-1" id="select-choice-1" class="malist">
+											<option value="dvd">DVD</option>
+											<option value="cd">CD</option>
+											<option value="livre">LIVRE</option>
+											<option value="argent">ARGENT</option>
+											<option value="autre">AUTRE</option>
+										</select>
+									</div>
+									<div class="ui-block-b">
+										<input type="text" name="autre" id="autre" value="" class="textautre ui-disabled"/>
+									</div>
+								</div>
+							</li>
+							<li data-role="fieldcontain">
+								<select name="selectContact" id="clicContact" class="selectContact" data-theme="d" data-icon="search" data-iconpos="left"> 
+									<option value="contact">Contact</option>
+								</select>
+							</li>
+							<li data-role="fieldcontain">
+								<div class="ui-grid-a">
+									<div class="ui-block-a">
+										<label for="select-choice-1">Nom : </label>
+									</div>
+									<div class="ui-block-b">
+										<label for="select-choice-1" id="nomContact"></label>
+									</div>
+								</div>
+							</li>
+							<li data-role="fieldcontain">
+								<div class="ui-grid-a">
+									<div class="ui-block-a">
+										<label for="select-choice-1">Prénom : </label>
+									</div>
+									<div class="ui-block-b">
+										<label for="select-choice-1" id="prenomContact"></label>
+									</div>
+								</div>
+							</li>
+							<li data-role="fieldcontain">
+								<label for="select-choice-1" >Titre : </label>
+								<input type="text" name="titreObjet" id="titreObjet" value=""  />
+							</li>
+							<li data-role="fieldcontain">
+								<label for="select-choice-1">Description</label>
+								<textarea name="textarea" id="textarea"></textarea>
+							</li>
+							<li class="ui-body ui-body-b">
+								<fieldset class="ui-grid-a">
+										<div class="ui-block-a"><button type="submit" data-theme="d">Annuler</button></div>
+										<div class="ui-block-b"><button type="submit" data-theme="a">Valider</button></div>
+								</fieldset>
+							</li>
+						</ul>
+					</form>
+				</div><!-- /content -->
+				<div data-role="footer">		
+					<div data-role="navbar" data-id="foo1" data-position="fixed">
+						<ul>
+							<li><a href="#Acceuil">Acceuil</a></li>
+							<li><a href="#Ajout" class="ui-btn-active ui-state-persist">Ajout</a></li>
+							<li><a href="#Credits">Credits</a></li>
+						</ul>
+					</div><!-- /navbar -->
+				</div><!-- /footer -->
+			</div><!-- /page -->
+			
+			<div data-role="page" id="Credits">
+				<div data-role="header" data-position="fixed">
+					<h1>Credits</h1>
+                </div><!-- /header -->
+                <div data-role="content">       
+					<p>page des credits</p>              
+				</div><!-- /content -->
+				<div data-role="footer">		
+					<div data-role="navbar" data-id="foo1" data-position="fixed">
+						<ul>
+							<li><a href="#Acceuil">Acceuil</a></li>
+							<li><a href="#Ajout">Ajout</a></li>
+							<li><a href="#Credits" class="ui-btn-active ui-state-persist">Credits</a></li>
+						</ul>
+					</div><!-- /navbar -->
+				</div><!-- /footer -->
+			</div><!-- /page -->
+    </body>
+	<!-- script -->
+	<script language="javascript">
+		// récupération de la valeur du select du form
+		$(".malist").bind( "change", function(event, ui) {
+			if($("select.malist").val()=="autre")
+			{
+				$("input.textautre").removeClass("ui-disabled");
+			}
+			else
+			{
+				$("input.textautre").addClass("ui-disabled");
+			}
+		});
+				
+		// stockage du nom dans la variable
+		$(".selectContact").bind("change", function(event, ui) {
+			var chaine = $("select.selectContact").val();
+			var tab = new Array();
+			tab = chaine.split(" ");
+			document.getElementById('nomContact').innerHTML = tab[1];
+			document.getElementById('prenomContact').innerHTML = tab[0];
+
+		});	
+	</script>
+</html>
