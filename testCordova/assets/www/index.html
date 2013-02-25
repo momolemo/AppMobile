@@ -24,10 +24,12 @@
 		<!-- phonegap setup -->
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <link rel="stylesheet" type="text/css" href="css/index.css" />
+        
 		<script type="text/javascript" src="cordova-2.4.0.js"></script>
 		<!-- jQuery Mobile setup -->
 		
 		<link rel="stylesheet" href="jquery/jquery.mobile-1.2.0.min.css" />
+		<link rel="stylesheet" type="text/css" href="css/css.css" />
 		
 		<script src="jquery/jquery-1.8.2.js"></script>
 		<script type="text/javascript">
@@ -37,9 +39,95 @@
 				$.mobile.allowCrossDomainPages = true;
 				$.mobile.defaultPageTransition = "slide";
 			});
-</script>
+		</script>
 		<script src="jquery/jquery.mobile-1.2.0.min.js"></script>
 
+		<script type="text/javascript">
+			// Attendre que PhoneGap soit prêt
+			//
+			document.addEventListener("deviceready", onDeviceReady, false);
+			// PhoneGap est prêt
+			//
+			function onDeviceReady() {
+				//getContacts();
+				var db = window.openDatabase("pretBDD", "1.0", "pretBDD", 200000);
+				db.transaction(populateDB, errorCB, successCB);
+			}
+			
+			//create table and insert some record
+			function populateDB(tx) {
+				tx.executeSql('CREATE TABLE IF NOT EXISTS Pret (id_pret INTEGER PRIMARY KEY AUTOINCREMENT, Titre TEXT NOT NULL, Description TEXT NOT NULL, Date TEXT NOT NULL, Nom TEXT, Prenom TEXT, Type TEXT NOT NULL)');
+			}
+			
+			//function will be called when an error occurred
+			function errorCB(err) {
+				console.log("Error processing SQL: "+err.code);
+			}
+
+			//function will be called when process succeed
+			function successCB() {
+				console.log("success!");
+			}
+			
+			
+			/* get all contacts from device */
+			function getContacts(){
+				  var optFilter = new ContactFindOptions();
+				  optFilter.filter = "";        // to return all contacts
+				  optFilter.multiple = true;    // return multiple results
+				  fields = ["name"];
+				   
+				  // get all contacts
+				  navigator.contacts.find(fields, gcsSuccess, gcsError, optFilter);
+}
+			
+			/* get all contacts error */
+			function gcsError(contactError){
+				  navigator.notification.alert('Contacts Error');
+			}
+			
+			function gcsSuccess(contacts){
+			if( contacts.length != 0 ){
+				// get formatted names and sort
+				var names = new Array();
+				for(var i=0; i<contacts.length; ++i){
+					  if(contacts[i].name){
+							if(contacts[i].name.formatted) names.push(contacts[i].name.formatted);
+					  }
+				}
+				names.sort();
+			
+				var list = $('.list');
+				list.html(''); // remove all the list items
+				for(var i=0; i<names.length; ++i){
+					list.append('<li class="elemliste">'+names[i]+'</li>');
+				}
+				
+				 
+				list.listview('refresh'); // refresh the list view
+			} else $('.list').html('No contacts');
+			}
+			
+			function ajoutPret()
+			{
+				var db = window.openDatabase("pretBDD", "1.0", "pretBDD", 200000);
+				db.transaction(insertionPret, errorCB, successCB);
+			}
+			
+			function insertionPret(tx)
+			{
+				
+				if($("select.malist").val()=="autre")
+				{
+					tx.executeSql('INSERT INTO Pret (Titre, Description, Date, Nom, Prenom, Type) VALUES (?,?,?,?,?,?)',[$("#titlePret").val(), $("#description").val(), new Date(), $("#prenomContact").text(), $("#nomContact").text(), $("#autre").val()]);
+				}
+				else
+				{
+					tx.executeSql('INSERT INTO Pret (Titre, Description, Date, Nom, Prenom, Type) VALUES (?,?,?,?,?,?)',[$("#titlePret").val(), $("#description").val(), new Date(), $("#prenomContact").text(), $("#nomContact").text(), $("select.malist").val()]);
+				}
+			}
+			
+		</script>
 	
         
     </head>
@@ -48,8 +136,35 @@
 				<div data-role="header" data-position="fixed">
 					<h1>Acceuil</h1>
                 </div><!-- /header -->
-                <div data-role="content">       
-					<p>page d'acceuil</p>              
+                <div data-role="content">        
+					<ul data-role="listview" data-filter="true" data-inset="true" datafilter-placeholder="Rechercher...">
+						<li data-role="list-divider">DVD</li>
+								<li><a href="index.html">
+									<h3>Snatch</h3>
+									<p>Bien sûr, planifions la réunion à Cuisine Highland à 8:00 ce soir. Ne peux pas attendre ! </p>
+									</a>
+								</li>
+								<li>Expendable 2</li>
+								<li>Avatar</li>
+								<li>Ali-G</li>
+								<li>Brice de Nice</li>
+						<li data-role="list-divider">CD</li>
+							<li>NRJ Music Awards</li>
+							<li>Fun Radio Summer 2012</li>
+							<li>Martin Solveig</li>
+							<li>David Guetta</li>
+							<li>Snoop Dog</li>
+						<li data-role="list-divider">LIVRES</li>
+							<li>Harry Potter</li>
+							<li>La lettre</li>
+							<li>Amadeus</li>
+							<li>La France</li>
+							<li>Les nouvelles technologies</li>
+						<li data-role="list-divider">ARGENT</li>
+							<li>Bertrand 10€</li>
+							<li>Vincent 12€</li>
+							<li>Anthony 5€</li>
+					</ul>
 				</div><!-- /content -->
 				<div data-role="footer">		
 					<div data-role="navbar" data-id="foo1" data-position="fixed">
@@ -68,7 +183,59 @@
 					<h1>Ajout</h1>
                 </div><!-- /header -->
                 <div data-role="content">       
-					<p>page ajouter un pret</p>              
+					<form action="javascript:ajoutPret();">
+						<ul data-role="listview" data-inset="true"> 
+							<li data-role="fieldcontain">
+								<label for="select-choice-1" class="select">Choisissez le type de prêt :</label>
+								<div class="ui-grid-a">
+									<div class="ui-block-a">
+										<select name="select-choice-1" id="select-choice-1" class="malist">
+											<option value="dvd">DVD</option>
+											<option value="cd">CD</option>
+											<option value="livre">LIVRE</option>
+											<option value="argent">ARGENT</option>
+											<option value="autre">AUTRE</option>
+										</select>
+									</div>
+									<div class="ui-block-b">
+										<input type="text" name="autre" id="autre" value="" class="textautre ui-disabled"/>
+									</div>
+								</div>
+							</li>
+							<li data-role="fieldcontain">
+								<a href="#Choixcontact" class="btncontact" data-rel="dialog" data-role="button">contact</a>
+							</li>
+							<li data-role="fieldcontain">
+								<div class="ui-grid-a">
+									<div class="ui-block-a">
+										<label for="select-choice-1">Nom : </label>
+									</div>
+									<div class="ui-block-b">
+										<label for="select-choice-1" id="nomContact"></label>
+									</div>
+								</div>
+								<div class="ui-grid-a">
+									<div class="ui-block-a">
+										<label for="select-choice-1">Prénom : </label>
+									</div>
+									<div class="ui-block-b">
+										<label for="select-choice-1" id="prenomContact"></label>
+									</div>
+								</div>
+							</li>
+							<li data-role="fieldcontain">
+								<label for="select-choice-1" >Titre : </label>
+								<input type="text" name="titlePret" id="titlePret" value=""  />
+							</li>
+							<li data-role="fieldcontain">
+								<label for="select-choice-1">Description</label>
+								<textarea name="textarea" id="description"></textarea>
+							</li>
+							<li>
+								<button type="submit">Valider</button>
+							</li>
+						</ul>
+					</form>
 				</div><!-- /content -->
 				<div data-role="footer">		
 					<div data-role="navbar" data-id="foo1" data-position="fixed">
@@ -98,5 +265,38 @@
 					</div><!-- /navbar -->
 				</div><!-- /footer -->
 			</div><!-- /page -->
+			
+			<div data-role="page" id="Choixcontact">
+				<div data-role="header" data-position="fixed">
+					<h4>Contact</h4>
+                </div><!-- /header -->
+                <div data-role="content">       
+					<ul data-role="listview" data-filter="true" class="list">
+					</ul>              
+				</div><!-- /content -->
+			</div><!-- /page -->
+			
+			<script type="text/javascript">
+				// récupération de la valeur du select du form
+				$(".malist").bind( "change", function(event, ui) {
+					if($("select.malist").val()=="autre")
+					{
+						$("input.textautre").removeClass("ui-disabled");
+					}
+					else
+					{
+						$("input.textautre").addClass("ui-disabled");
+					}
+				});
+				
+				$('.list li').live('click', function(event) {
+					var chaine=$(this).clone().children().remove().end().text();
+					var tab=chaine.split(" ");
+					$('#nomContact').text(tab[1]);
+					$('#prenomContact').text(tab[0]);
+					$('#Choixcontact').dialog('close')
+				});
+				
+			</script>
     </body>
 </html>
