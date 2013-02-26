@@ -49,6 +49,9 @@
 			// PhoneGap est prêt
 			//
 			function onDeviceReady() {
+				idPret = 0;
+				idPretSuppr = 0;
+			
 				//getContacts();
 				var db = window.openDatabase("pretBDD", "1.0", "pretBDD", 200000);
 				db.transaction(populateDB, errorCB, successCB);
@@ -56,6 +59,7 @@
 			
 			//create table and insert some record
 			function populateDB(tx) {
+				//tx.executeSql('DROP TABLE IF EXISTS Pret');
 				tx.executeSql('CREATE TABLE IF NOT EXISTS Pret (id_pret INTEGER PRIMARY KEY AUTOINCREMENT, Titre TEXT NOT NULL, Description TEXT NOT NULL, Date TEXT NOT NULL, Nom TEXT, Prenom TEXT, Type TEXT NOT NULL)');
 			}
 			
@@ -116,7 +120,6 @@
 			
 			function insertionPret(tx)
 			{
-				
 				if($("select.malist").val()=="autre")
 				{
 					tx.executeSql('INSERT INTO Pret (Titre, Description, Date, Nom, Prenom, Type) VALUES (?,?,?,?,?,?)',[$("#titlePret").val(), $("#description").val(), new Date(), $("#prenomContact").text(), $("#nomContact").text(), $("#autre").val()]);
@@ -125,6 +128,119 @@
 				{
 					tx.executeSql('INSERT INTO Pret (Titre, Description, Date, Nom, Prenom, Type) VALUES (?,?,?,?,?,?)',[$("#titlePret").val(), $("#description").val(), new Date(), $("#prenomContact").text(), $("#nomContact").text(), $("select.malist").val()]);
 				}
+				$.mobile.changePage( $("#Accueil"));
+			}
+			
+			function affichePret(_idPret)
+			{
+				idPret = _idPret;
+			
+				var db = window.openDatabase("pretBDD", "1.0", "pretBDD", 200000);
+				db.transaction(affichagePret, errorCB, successCB);
+			}
+			
+			function affichagePret(tx) {
+				// SELECT * FROM Pret WHERE ID_pret=idPret
+				tx.executeSql('SELECT * FROM Pret WHERE id_pret=?', [idPret], donneesPourAffichagePret,
+					function() {
+						alert('Erreur SELECT * FROM Pret WHERE id_pret=idPret Pour Affichage Pret');
+					}
+				);
+			}
+			
+			function donneesPourAffichagePret(tx, results) {
+				// Affichage des valeurs
+				$('#titrePret').text(results.rows.item(0).Titre);
+				$('#typePret').text(results.rows.item(0).Type);
+				$('#datePret').text(results.rows.item(0).Date);
+				$('#nomPret').text(results.rows.item(0).Nom);
+				$('#prenomPret').text(results.rows.item(0).Prenom);
+				$('#descriptionPret').text(results.rows.item(0).Description);
+				$('#suppressionPret').html('<a href="javascript: suppressionPret(' + results.rows.item(0).id_pret + ');" class="btnSuppr" data-role="button">Supprimer le Pret</a>');
+				$('.btnSuppr').button();
+				// Changement de page
+				$.mobile.changePage( $("#pret"));
+			}
+			
+			function suppressionPret(_idPretSuppr) {
+				idPretSuppr = _idPretSuppr;
+			
+				var db = window.openDatabase("pretBDD", "1.0", "pretBDD", 200000);
+				db.transaction(supprimePret, errorCB, successCB);
+			}
+			
+			function supprimePret(tx) {
+				tx.executeSql('DELETE FROM Pret WHERE id_pret=?', [idPretSuppr]);
+				$.mobile.changePage( $("#Accueil"));
+			}
+			
+			function remplirAccueil() {
+				var db = window.openDatabase("pretBDD", "1.0", "pretBDD", 200000);
+				db.transaction(remplissageAccueil, errorCB, successCB);
+			}
+			
+			function remplissageAccueil(tx) {
+				tx.executeSql('SELECT * FROM Pret ORDER BY Type', [], donneesPourAccueil,
+					function() {
+						alert('Erreur select * from pret pour accueil');
+					}
+				);
+			}
+			
+			function donneesPourAccueil(tx, results) {
+				var i = 0;
+				var categorie = "";
+				
+				if( results.rows.length != 0 ){
+					var list = $('#listRemplirAccueil');
+					list.html(''); // remove all the list items
+					
+					
+					while(i < results.rows.length) {
+						categorie = results.rows.item(i).Type;
+						list.append("<li data-role=\"list-divider\">" + categorie + "</li>");
+						while(i < results.rows.length && results.rows.item(i).Type == categorie)
+						{
+							list.append("<li><a href=\"javascript: affichePret(" + results.rows.item(i).id_pret + ");\">" + results.rows.item(i).Titre + "</a></li>");
+							i++;
+						}
+					}
+					
+					list.listview('refresh'); // refresh the list view
+				}
+				else $('#listRemplirAccueil').html('Pas de pret en cours !!!');
+			}
+			
+			function remplirChoixTypeAjout() {
+				var db = window.openDatabase("pretBDD", "1.0", "pretBDD", 200000);
+				db.transaction(remplissageChoixTypeAjout, errorCB, successCB);
+			}
+			
+			function remplissageChoixTypeAjout(tx) {
+				tx.executeSql('SELECT DISTINCT Type FROM Pret ORDER BY Type', [], donneesPourChoixTypeAjout,
+					function() {
+						alert('Erreur select * from pret pour accueil');
+					}
+				);
+			}
+			
+			function donneesPourChoixTypeAjout(tx, results) {
+				var select = $('#choixTypeAjout');
+				select.html(''); // remove all the select items
+				
+				for(var i = 0; i < results.rows.length; i++)
+				{
+					select.append("<option value=\"" + results.rows.item(i).Type + "\">" + results.rows.item(i).Type + "</option>");
+				}
+				
+				select.append("<option value=\"autre\">Autre</option>");
+				select[0].selectedIndex = i;
+				//select.selectmenu();
+				select.selectmenu('refresh'); // refresh the select
+				$("input.textautre").removeClass("ui-disabled");
+				$("input.textautre").val('');
+				$("input.textautre").val('');
+				$("input.textautre").val('');
 			}
 			
 		</script>
@@ -132,44 +248,19 @@
         
     </head>
     <body>
-            <div data-role="page" id="Acceuil">
+            <div data-role="page" id="Accueil">
 				<div data-role="header" data-position="fixed">
-					<h1>Acceuil</h1>
+					<h1>Accueil</h1>
                 </div><!-- /header -->
                 <div data-role="content">        
-					<ul data-role="listview" data-filter="true" data-inset="true" datafilter-placeholder="Rechercher...">
-						<li data-role="list-divider">DVD</li>
-								<li><a href="index.html">
-									<h3>Snatch</h3>
-									<p>Bien sûr, planifions la réunion à Cuisine Highland à 8:00 ce soir. Ne peux pas attendre ! </p>
-									</a>
-								</li>
-								<li>Expendable 2</li>
-								<li>Avatar</li>
-								<li>Ali-G</li>
-								<li>Brice de Nice</li>
-						<li data-role="list-divider">CD</li>
-							<li>NRJ Music Awards</li>
-							<li>Fun Radio Summer 2012</li>
-							<li>Martin Solveig</li>
-							<li>David Guetta</li>
-							<li>Snoop Dog</li>
-						<li data-role="list-divider">LIVRES</li>
-							<li>Harry Potter</li>
-							<li>La lettre</li>
-							<li>Amadeus</li>
-							<li>La France</li>
-							<li>Les nouvelles technologies</li>
-						<li data-role="list-divider">ARGENT</li>
-							<li>Bertrand 10€</li>
-							<li>Vincent 12€</li>
-							<li>Anthony 5€</li>
+					<ul id="listRemplirAccueil" data-role="listview" data-filter="true" data-inset="true" datafilter-placeholder="Rechercher...">
 					</ul>
 				</div><!-- /content -->
 				<div data-role="footer">		
 					<div data-role="navbar" data-id="foo1" data-position="fixed">
 						<ul>
-							<li><a href="#Acceuil" class="ui-btn-active ui-state-persist">Acceuil</a></li>
+						<!-- javascript: remplirAccueil(); $.mobile.changePage( $('#pret'), 'slide', true, true); -->
+							<li><a href="#Accueil" class="ui-btn-active ui-state-persist">Accueil</a></li>
 							<li><a href="#Ajout">Ajout</a></li>
 							<li><a href="#Credits">Credits</a></li>
 						</ul>
@@ -186,49 +277,46 @@
 					<form action="javascript:ajoutPret();">
 						<ul data-role="listview" data-inset="true"> 
 							<li data-role="fieldcontain">
-								<label for="select-choice-1" class="select">Choisissez le type de prêt :</label>
+								<label for="choixTypeAjout" class="select">Choisissez le type de prêt :</label>
 								<div class="ui-grid-a">
 									<div class="ui-block-a">
-										<select name="select-choice-1" id="select-choice-1" class="malist">
-											<option value="dvd">DVD</option>
-											<option value="cd">CD</option>
-											<option value="livre">LIVRE</option>
-											<option value="argent">ARGENT</option>
-											<option value="autre">AUTRE</option>
+										<select data-mini="true" name="choixTypeAjout" id="choixTypeAjout" class="malist">
 										</select>
 									</div>
 									<div class="ui-block-b">
-										<input type="text" name="autre" id="autre" value="" class="textautre ui-disabled"/>
+										<input data-mini="true" type="text" name="autre" id="autre" value="" class="textautre ui-disabled"/>
 									</div>
 								</div>
 							</li>
 							<li data-role="fieldcontain">
-								<a href="#Choixcontact" class="btncontact" data-rel="dialog" data-role="button">contact</a>
+								<div>
+									<a href="#Choixcontact" class="btncontact" data-rel="dialog" data-role="button">Contact</a>
+								</div>
 							</li>
 							<li data-role="fieldcontain">
 								<div class="ui-grid-a">
 									<div class="ui-block-a">
-										<label for="select-choice-1">Nom : </label>
+										<label for="nomContact">Nom : </label>
 									</div>
 									<div class="ui-block-b">
-										<label for="select-choice-1" id="nomContact"></label>
+										<label name="nomContact" id="nomContact"></label>
 									</div>
 								</div>
 								<div class="ui-grid-a">
 									<div class="ui-block-a">
-										<label for="select-choice-1">Prénom : </label>
+										<label for="prenomContact">Prénom : </label>
 									</div>
 									<div class="ui-block-b">
-										<label for="select-choice-1" id="prenomContact"></label>
+										<label name="prenomContact" id="prenomContact"></label>
 									</div>
 								</div>
 							</li>
 							<li data-role="fieldcontain">
-								<label for="select-choice-1" >Titre : </label>
+								<label for="titlePret" >Titre : </label>
 								<input type="text" name="titlePret" id="titlePret" value=""  />
 							</li>
 							<li data-role="fieldcontain">
-								<label for="select-choice-1">Description</label>
+								<label for="description">Description</label>
 								<textarea name="textarea" id="description"></textarea>
 							</li>
 							<li>
@@ -240,7 +328,7 @@
 				<div data-role="footer">		
 					<div data-role="navbar" data-id="foo1" data-position="fixed">
 						<ul>
-							<li><a href="#Acceuil">Acceuil</a></li>
+							<li><a href="#Accueil">Accueil</a></li>
 							<li><a href="#Ajout" class="ui-btn-active ui-state-persist">Ajout</a></li>
 							<li><a href="#Credits">Credits</a></li>
 						</ul>
@@ -252,13 +340,28 @@
 				<div data-role="header" data-position="fixed">
 					<h1>Credits</h1>
                 </div><!-- /header -->
-                <div data-role="content">       
-					<p>page des credits</p>              
+                <div data-role="content"> 
+					<h3>Présentation</h3>
+					<p>L'application a été développé dans la cadre d'un projet réalisé pour le 
+					développement mobile au sein de l'école Polytech'Tours par quatre étudiants de 
+					cinquième année en Informatique Industriel.</p>
+					<h3>Fonction</h3>
+					<p>Cette application sert à des usagers qui souhaite effectuer un suivi des prêts qu'ils font avec
+					leurs amis.</br> On peut y ajouter n'importe quel prêt et le retrouver sur la page principale
+					à l'aide de la barre de recherche. Cette page principale regroupe l'ensemble des prêts qui sont 
+					sauvegardés dans la base de données.</p> 
+					<h3>Développeurs</h3>
+					<ul>
+						<li>HIRSON Pierre</li>
+						<li>MABILLEAU Bertrand</li>
+						<li>MONTAGNE Vincent</li>
+						<li>SEUREAU Mickaël</li>
+					</ul>
 				</div><!-- /content -->
 				<div data-role="footer">		
 					<div data-role="navbar" data-id="foo1" data-position="fixed">
 						<ul>
-							<li><a href="#Acceuil">Acceuil</a></li>
+							<li><a href="#Accueil">Accueil</a></li>
 							<li><a href="#Ajout">Ajout</a></li>
 							<li><a href="#Credits" class="ui-btn-active ui-state-persist">Credits</a></li>
 						</ul>
@@ -276,12 +379,87 @@
 				</div><!-- /content -->
 			</div><!-- /page -->
 			
+			<div data-role="page" id="pret" class="pret">
+				<div data-role="header" data-position="fixed">
+					<h1 id="titrePret"></h1>
+                </div><!-- /header -->
+                <div data-role="content">       
+					<form>
+						<ul data-role="listview" data-inset="true"> 
+							<li data-role="fieldcontain">
+								<div class="ui-grid-a">
+									<div class="ui-block-a">
+										<label>Type de prêt : </label>
+									</div>
+									<div class="ui-block-b">
+										<label id="typePret"></label>
+									</div>
+								</div>								
+							</li>
+							<li data-role="fieldcontain">
+								<div class="ui-grid-a">
+									<div class="ui-block-a">
+										<label>Date : </label>
+									</div>
+									<div class="ui-block-b">
+										<label id="datePret"></label>
+									</div>
+								</div>								
+							</li>
+							<li data-role="fieldcontain">
+								<label>Contact</label>
+								</br></br>
+								<div class="ui-grid-a">
+									<div class="ui-block-a">
+										<label>Nom : </label>
+									</div>
+									<div class="ui-block-b">
+										<label id="nomPret"></label>
+									</div>
+								</div>
+								<div class="ui-grid-a">
+									<div class="ui-block-a">
+										<label>Prénom : </label>
+									</div>
+									<div class="ui-block-b">
+										<label id="prenomPret"></label>
+									</div>
+								</div>
+							</li>
+							<li data-role="fieldcontain">
+								<div>
+									<label>Description :</label>
+									
+								</div></br></br>
+								<div>
+									<label id="descriptionPret"></label>
+								</div>
+							</li>
+							<li data-role="fieldcontain">
+								<div id="suppressionPret">
+								</div>
+							</li>
+						</ul>
+					</form>
+				</div><!-- /content -->
+				<div data-role="footer">		
+					<div data-role="navbar" data-id="foo1" data-position="fixed">
+						<ul>
+							<li><a href="#Accueil">Accueil</a></li>
+							<li><a href="#Ajout">Ajout</a></li>
+							<li><a href="#Credits">Credits</a></li>
+						</ul>
+					</div><!-- /navbar -->
+				</div><!-- /footer -->
+			</div><!-- /page -->
+			
 			<script type="text/javascript">
 				// récupération de la valeur du select du form
 				$(".malist").bind( "change", function(event, ui) {
 					if($("select.malist").val()=="autre")
 					{
 						$("input.textautre").removeClass("ui-disabled");
+						$("input.textautre").val('');
 					}
 					else
 					{
@@ -295,6 +473,14 @@
 					$('#nomContact').text(tab[1]);
 					$('#prenomContact').text(tab[0]);
 					$('#Choixcontact').dialog('close')
+				});
+				
+				$("#Accueil").live('pagebeforeshow', function() {
+					remplirAccueil();
+				});
+				
+				$("#Ajout").live('pagebeforeshow', function() {
+					remplirChoixTypeAjout();
 				});
 				
 			</script>
