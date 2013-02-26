@@ -239,8 +239,8 @@
 				select.selectmenu('refresh'); // refresh the select
 				$("input.textautre").removeClass("ui-disabled");
 				$("input.textautre").val('');
-				$("input.textautre").val('');
-				$("input.textautre").val('');
+				$("input.titlePret").val('');
+				$("textarea.description").val('');
 			}
 			
 		</script>
@@ -313,11 +313,11 @@
 							</li>
 							<li data-role="fieldcontain">
 								<label for="titlePret" >Titre : </label>
-								<input type="text" name="titlePret" id="titlePret" value=""  />
+								<input type="text" name="titlePret" id="titlePret" class="titlePret" value=""  />
 							</li>
 							<li data-role="fieldcontain">
 								<label for="description">Description</label>
-								<textarea name="textarea" id="description"></textarea>
+								<textarea name="textarea" id="description" class="description"></textarea>
 							</li>
 							<li>
 								<button type="submit">Valider</button>
