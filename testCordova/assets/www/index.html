@@ -21,20 +21,20 @@
     <head>
 		<title>AppMobile</title>
 		<meta name="viewport" content="width=device-width, initial-scale=2 user-scalable=no"> 
-		<!-- phonegap setup -->
+		
+		<!-- phonegap et jquery setup -->
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <link rel="stylesheet" type="text/css" href="css/index.css" />
         
 		<script type="text/javascript" src="cordova-2.4.0.js"></script>
-		<!-- jQuery Mobile setup -->
-		
 		<link rel="stylesheet" href="jquery/jquery.mobile-1.2.0.min.css" />
 		<link rel="stylesheet" type="text/css" href="css/css.css" />
 		
 		<script src="jquery/jquery-1.8.2.js"></script>
 		<script type="text/javascript">
 			$( document ).bind( "mobileinit", function() {
-				// Faites vos changements de configuration du framework jQuery Mobile ici !
+				// modifications des paramètres de jquery
+				//amélioration de jquery avec phonegap (cf doc jquery)
 				$.support.cors = true;
 				$.mobile.allowCrossDomainPages = true;
 				$.mobile.defaultPageTransition = "slide";
@@ -52,7 +52,7 @@
 				idPret = 0;
 				idPretSuppr = 0;
 			
-				//getContacts();
+				getContacts();
 				var db = window.openDatabase("pretBDD", "1.0", "pretBDD", 200000);
 				db.transaction(populateDB, errorCB, successCB);
 			}
@@ -87,7 +87,7 @@
 			
 			/* get all contacts error */
 			function gcsError(contactError){
-				  navigator.notification.alert('Contacts Error');
+				  console.log('Contacts Error');
 			}
 			
 			function gcsSuccess(contacts){
@@ -114,20 +114,34 @@
 			
 			function ajoutPret()
 			{
-				var db = window.openDatabase("pretBDD", "1.0", "pretBDD", 200000);
-				db.transaction(insertionPret, errorCB, successCB);
+				if ($("input.textautre").val()=='' ||
+					$("#titlePret").val()=='' ||
+					$("#description").val()=='' )
+				{
+					alert('Veuillez remplir les champs avant de créer un pret!');
+				}
+				else
+				{
+					var db = window.openDatabase("pretBDD", "1.0", "pretBDD", 200000);
+					db.transaction(insertionPret, errorCB, successCB);
+				}
 			}
 			
 			function insertionPret(tx)
 			{
 				if($("select.malist").val()=="autre")
 				{
-					tx.executeSql('INSERT INTO Pret (Titre, Description, Date, Nom, Prenom, Type) VALUES (?,?,?,?,?,?)',[$("#titlePret").val(), $("#description").val(), new Date(), $("#prenomContact").text(), $("#nomContact").text(), $("#autre").val()]);
+					tx.executeSql('INSERT INTO Pret (Titre, Description, Date, Nom, Prenom, Type) VALUES (?,?,?,?,?,?)',[$("#titlePret").val(), $("#description").val(), new Date();, $("#prenomContact").text(), $("#nomContact").text(), $("#autre").val()]);
 				}
 				else
 				{
-					tx.executeSql('INSERT INTO Pret (Titre, Description, Date, Nom, Prenom, Type) VALUES (?,?,?,?,?,?)',[$("#titlePret").val(), $("#description").val(), new Date(), $("#prenomContact").text(), $("#nomContact").text(), $("select.malist").val()]);
+					tx.executeSql('INSERT INTO Pret (Titre, Description, Date, Nom, Prenom, Type) VALUES (?,?,?,?,?,?)',[$("#titlePret").val(), $("#description").val(), new Date();, $("#prenomContact").text(), $("#nomContact").text(), $("select.malist").val()]);
 				}
+				$("input.textautre").val('');
+				$("#titlePret").val('');
+				$("#nomContact").val('');
+				$("#prenomContact").val('');
+				$("#description").val('');
 				$.mobile.changePage( $("#Accueil"));
 			}
 			
@@ -143,7 +157,7 @@
 				// SELECT * FROM Pret WHERE ID_pret=idPret
 				tx.executeSql('SELECT * FROM Pret WHERE id_pret=?', [idPret], donneesPourAffichagePret,
 					function() {
-						alert('Erreur SELECT * FROM Pret WHERE id_pret=idPret Pour Affichage Pret');
+						console.log('Erreur SELECT * FROM Pret WHERE id_pret=idPret Pour Affichage Pret');
 					}
 				);
 			}
@@ -182,7 +196,7 @@
 			function remplissageAccueil(tx) {
 				tx.executeSql('SELECT * FROM Pret ORDER BY Type', [], donneesPourAccueil,
 					function() {
-						alert('Erreur select * from pret pour accueil');
+						console.log('Erreur select * from pret pour accueil');
 					}
 				);
 			}
@@ -219,7 +233,7 @@
 			function remplissageChoixTypeAjout(tx) {
 				tx.executeSql('SELECT DISTINCT Type FROM Pret ORDER BY Type', [], donneesPourChoixTypeAjout,
 					function() {
-						alert('Erreur select * from pret pour accueil');
+						console.log('Erreur select * from pret pour choixtypeajout');
 					}
 				);
 			}
@@ -238,16 +252,14 @@
 				//select.selectmenu();
 				select.selectmenu('refresh'); // refresh the select
 				$("input.textautre").removeClass("ui-disabled");
-				$("input.textautre").val('');
-				$("input.textautre").val('');
-				$("input.textautre").val('');
-			}
-			
+				
+			}	
 		</script>
 	
         
     </head>
     <body>
+			<!-- page d'accueil -->
             <div data-role="page" id="Accueil">
 				<div data-role="header" data-position="fixed">
 					<h1>Accueil</h1>
@@ -268,7 +280,7 @@
 				</div><!-- /footer -->
 			</div><!-- /page -->
         
-		
+			<!-- page d'ajout d'un pret -->
 			<div data-role="page" id="Ajout">
 				<div data-role="header" data-position="fixed">
 					<h1>Ajout</h1>
@@ -336,6 +348,7 @@
 				</div><!-- /footer -->
 			</div><!-- /page -->
 			
+			<!-- page des credits -->
 			<div data-role="page" id="Credits">
 				<div data-role="header" data-position="fixed">
 					<h1>Credits</h1>
@@ -369,6 +382,7 @@
 				</div><!-- /footer -->
 			</div><!-- /page -->
 			
+			<!-- page de dialog affichant les contacts -->
 			<div data-role="page" id="Choixcontact">
 				<div data-role="header" data-position="fixed">
 					<h4>Contact</h4>
@@ -379,6 +393,7 @@
 				</div><!-- /content -->
 			</div><!-- /page -->
 			
+			<!-- page d'affichage des details d'un pret -->
 			<div data-role="page" id="pret" class="pret">
 				<div data-role="header" data-position="fixed">
 					<h1 id="titrePret"></h1>
@@ -454,7 +469,7 @@
 			</div><!-- /page -->
 			
 			<script type="text/javascript">
-				// récupération de la valeur du select du form
+				// Activation ou desactivation de l'input de creation d'un nouveau type
 				$(".malist").bind( "change", function(event, ui) {
 					if($("select.malist").val()=="autre")
 					{
@@ -467,6 +482,7 @@
 					}
 				});
 				
+				//récupération du nom de contact choisi et découpage en nom et prenom
 				$('.list li').live('click', function(event) {
 					var chaine=$(this).clone().children().remove().end().text();
 					var tab=chaine.split(" ");
@@ -475,10 +491,12 @@
 					$('#Choixcontact').dialog('close')
 				});
 				
+				//appel de la fonction de remplissage de la page accueil avant son affichage
 				$("#Accueil").live('pagebeforeshow', function() {
 					remplirAccueil();
 				});
 				
+				//appel de la fonction de remplissage du select avec les type présent dans la bdd
 				$("#Ajout").live('pagebeforeshow', function() {
 					remplirChoixTypeAjout();
 				});
