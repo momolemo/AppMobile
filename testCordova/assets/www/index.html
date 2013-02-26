@@ -52,7 +52,7 @@
 				idPret = 0;
 				idPretSuppr = 0;
 			
-				//getContacts();
+				getContacts();
 				var db = window.openDatabase("pretBDD", "1.0", "pretBDD", 200000);
 				db.transaction(populateDB, errorCB, successCB);
 			}
@@ -267,7 +267,6 @@
 				
 				select.append("<option value=\"autre\">Autre</option>");
 				select[0].selectedIndex = i;
-				//select.selectmenu();
 				select.selectmenu('refresh'); // refresh the select
 				$("input.textautre").removeClass("ui-disabled");
 			}	
