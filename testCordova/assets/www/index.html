@@ -114,7 +114,7 @@
 			
 			function ajoutPret()
 			{
-				if ($("input.textautre").val()=='' ||
+				if (($("select.malist").val()=="autre" && $("input.textautre").val()=='') ||
 					$("#titlePret").val()=='' ||
 					$("#description").val()=='' )
 				{
@@ -129,13 +129,31 @@
 			
 			function insertionPret(tx)
 			{
+				var date = new Date;
+				var jours = new Array('Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi');
+				var mois = new Array('Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre');
+
+				var annee = date.getFullYear();
+				var moi = date.getMonth();
+				var jour_num = date.getDate();
+				var jour = date.getDay();
+
+				var h = date.getHours();
+				var m = date.getMinutes();
+				var s = date.getSeconds();
+				if(h<10){ h = "0"+h;}
+				if(m<10){ m = "0"+m;}
+				if(s<10){ s = "0"+s;}
+
+				var Date_Heure = jours[jour]+' '+jour_num+' '+mois[moi]+' '+annee+', '+h+' h '+m+' mn '+s+' s.';
+				
 				if($("select.malist").val()=="autre")
 				{
-					tx.executeSql('INSERT INTO Pret (Titre, Description, Date, Nom, Prenom, Type) VALUES (?,?,?,?,?,?)',[$("#titlePret").val(), $("#description").val(), new Date();, $("#prenomContact").text(), $("#nomContact").text(), $("#autre").val()]);
+					tx.executeSql('INSERT INTO Pret (Titre, Description, Date, Nom, Prenom, Type) VALUES (?,?,?,?,?,?)',[$("#titlePret").val(), $("#description").val(), Date_Heure, $("#prenomContact").text(), $("#nomContact").text(), $("#autre").val()]);
 				}
 				else
 				{
-					tx.executeSql('INSERT INTO Pret (Titre, Description, Date, Nom, Prenom, Type) VALUES (?,?,?,?,?,?)',[$("#titlePret").val(), $("#description").val(), new Date();, $("#prenomContact").text(), $("#nomContact").text(), $("select.malist").val()]);
+					tx.executeSql('INSERT INTO Pret (Titre, Description, Date, Nom, Prenom, Type) VALUES (?,?,?,?,?,?)',[$("#titlePret").val(), $("#description").val(), Date_Heure, $("#prenomContact").text(), $("#nomContact").text(), $("select.malist").val()]);
 				}
 				$("input.textautre").val('');
 				$("#titlePret").val('');
@@ -249,11 +267,10 @@
 				
 				select.append("<option value=\"autre\">Autre</option>");
 				select[0].selectedIndex = i;
-				//select.selectmenu();
 				select.selectmenu('refresh'); // refresh the select
 				$("input.textautre").removeClass("ui-disabled");
-				
 			}	
+
 		</script>
 	
         
@@ -325,11 +342,11 @@
 							</li>
 							<li data-role="fieldcontain">
 								<label for="titlePret" >Titre : </label>
-								<input type="text" name="titlePret" id="titlePret" value=""  />
+								<input type="text" name="titlePret" id="titlePret" class="titlePret" value=""  />
 							</li>
 							<li data-role="fieldcontain">
 								<label for="description">Description</label>
-								<textarea name="textarea" id="description"></textarea>
+								<textarea name="textarea" id="description" class="description"></textarea>
 							</li>
 							<li>
 								<button type="submit">Valider</button>
