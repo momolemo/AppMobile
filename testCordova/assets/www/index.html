@@ -52,9 +52,13 @@
 				idPret = 0;
 				idPretSuppr = 0;
 			
-				getContacts();
+				//getContacts();
 				var db = window.openDatabase("pretBDD", "1.0", "pretBDD", 200000);
 				db.transaction(populateDB, errorCB, successCB);
+				
+				$('#pret').live('swiperight',function(event){
+					$.mobile.changePage( $("#Accueil"));
+				});
 			}
 			
 			//create table and insert some record
@@ -79,7 +83,7 @@
 				  var optFilter = new ContactFindOptions();
 				  optFilter.filter = "";        // to return all contacts
 				  optFilter.multiple = true;    // return multiple results
-				  fields = ["name"];
+				  fields = ["name", "id"];
 				   
 				  // get all contacts
 				  navigator.contacts.find(fields, gcsSuccess, gcsError, optFilter);
@@ -415,6 +419,7 @@
 			<!-- page d'affichage des details d'un pret -->
 			<div data-role="page" id="pret" class="pret">
 				<div data-role="header" data-position="fixed" data-id="head">
+					<a data-rel="back" data-icon="back" data-direction="reverse">Retour</a>
 					<h1 id="titrePret"></h1>
                 </div><!-- /header -->
                 <div data-role="content">       
