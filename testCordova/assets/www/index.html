@@ -157,8 +157,8 @@
 				}
 				$("input.textautre").val('');
 				$("#titlePret").val('');
-				$("#nomContact").val('');
-				$("#prenomContact").val('');
+				$("#nomContact").text('');
+				$("#prenomContact").text('');
 				$("#description").val('');
 				$.mobile.changePage( $("#Accueil"));
 			}
@@ -169,6 +169,7 @@
 			
 				var db = window.openDatabase("pretBDD", "1.0", "pretBDD", 200000);
 				db.transaction(affichagePret, errorCB, successCB);
+				
 			}
 			
 			function affichagePret(tx) {
@@ -190,10 +191,11 @@
 				$('#descriptionPret').text(results.rows.item(0).Description);
 				$('#suppressionPret').html('<a href="javascript: suppressionPret(' + results.rows.item(0).id_pret + ');" class="btnSuppr" data-role="button">Supprimer le Pret</a>');
 				$('.btnSuppr').button();
+				
 				// Changement de page
 				$.mobile.changePage( $("#pret"));
 			}
-			
+					
 			function suppressionPret(_idPretSuppr) {
 				idPretSuppr = _idPretSuppr;
 			
@@ -278,7 +280,7 @@
     <body>
 			<!-- page d'accueil -->
             <div data-role="page" id="Accueil">
-				<div data-role="header" data-position="fixed">
+				<div data-role="header" data-position="fixed" data-id="head">
 					<h1>Accueil</h1>
                 </div><!-- /header -->
                 <div data-role="content">        
@@ -299,7 +301,7 @@
         
 			<!-- page d'ajout d'un pret -->
 			<div data-role="page" id="Ajout">
-				<div data-role="header" data-position="fixed">
+				<div data-role="header" data-position="fixed" data-id="head">
 					<h1>Ajout</h1>
                 </div><!-- /header -->
                 <div data-role="content">       
@@ -367,7 +369,7 @@
 			
 			<!-- page des credits -->
 			<div data-role="page" id="Credits">
-				<div data-role="header" data-position="fixed">
+				<div data-role="header" data-position="fixed" data-id="head">
 					<h1>Credits</h1>
                 </div><!-- /header -->
                 <div data-role="content"> 
@@ -412,7 +414,7 @@
 			
 			<!-- page d'affichage des details d'un pret -->
 			<div data-role="page" id="pret" class="pret">
-				<div data-role="header" data-position="fixed">
+				<div data-role="header" data-position="fixed" data-id="head">
 					<h1 id="titrePret"></h1>
                 </div><!-- /header -->
                 <div data-role="content">       
