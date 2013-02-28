@@ -17,12 +17,14 @@
        under the License.
  */
 
-package root.fr;
+package fr.polytech.bonscomptes;
 
 import android.os.Bundle;
 import org.apache.cordova.*;
 
-public class testCordova extends DroidGap
+import fr.polytech.bonscomptes.R;
+
+public class Cordova extends DroidGap
 {
     @Override
     public void onCreate(Bundle savedInstanceState)

@@ -1,5 +1,5 @@
 /** Automatically generated file. DO NOT MODIFY */
-package root.fr;
+package fr.polytech.bonscomptes;
 
 public final class BuildConfig {
     public final static boolean DEBUG = true;
